@@ -2287,6 +2287,37 @@ tsapi int TSHttpTxnServerRespHdrBytesGet(TSHttpTxn txnp);
 tsapi int64_t TSHttpTxnServerRespBodyBytesGet(TSHttpTxn txnp);
 tsapi int TSHttpTxnClientRespHdrBytesGet(TSHttpTxn txnp);
 tsapi int64_t TSHttpTxnClientRespBodyBytesGet(TSHttpTxn txnp);
+tsapi int TSHttpTxnClientReqIsSslReused(TSHttpTxn txnp);
+
+/**
+   Return the current (if set) SSL Cipher. This is still owned by the
+   core, and must not be free'd.
+
+   @param txnp the transaction pointer
+
+   @return the SSL Cipher
+*/
+tsapi const char *TSHttpTxnClientReqSslCipherGet(TSHttpTxn txnp);
+
+/**
+   Return the current (if set) SSL Protocol. This is still owned by the
+   core, and must not be free'd.
+
+   @param txnp the transaction pointer
+
+   @return the SSL Protocol
+*/
+tsapi const char *TSHttpTxnClientReqSslProtocolGet(TSHttpTxn txnp);
+
+/**
+   Return the current (if set) SSL Curve. This is still owned by the
+   core, and must not be free'd.
+
+   @param txnp the transaction pointer
+
+   @return the SSL Curve
+*/
+tsapi const char *TSHttpTxnClientReqSslCurveGet(TSHttpTxn txnp);
 
 /* NetVC timeout APIs. */
 tsapi void TSVConnInactivityTimeoutSet(TSVConn connp, TSHRTime timeout);

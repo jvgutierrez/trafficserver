@@ -6361,6 +6361,42 @@ TSHttpTxnClientRespBodyBytesGet(TSHttpTxn txnp)
 }
 
 int
+TSHttpTxnClientReqIsSslReused(TSHttpTxn txnp)
+{
+  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+
+  HttpSM *sm = (HttpSM *)txnp;
+  return sm->client_ssl_reused;
+}
+
+const char *
+TSHttpTxnClientReqSslCipherGet(TSHttpTxn txnp)
+{
+  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+
+  HttpSM *sm = (HttpSM *)txnp;
+  return sm->client_cipher_suite;
+}
+
+const char *
+TSHttpTxnClientReqSslProtocolGet(TSHttpTxn txnp)
+{
+  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+
+  HttpSM *sm = (HttpSM *)txnp;
+  return sm->client_sec_protocol;
+}
+
+const char *
+TSHttpTxnClientReqSslCurveGet(TSHttpTxn txnp)
+{
+  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+
+  HttpSM *sm = (HttpSM *)txnp;
+  return sm->client_curve;
+}
+
+int
 TSHttpTxnPushedRespHdrBytesGet(TSHttpTxn txnp)
 {
   sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
