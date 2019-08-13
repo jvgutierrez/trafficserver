@@ -1141,6 +1141,13 @@ ssl_callback_info(const SSL *ssl, int where, int ret)
         SSL_INCREMENT_DYN_STAT((intptr_t)it->second);
       }
     }
+    int curve_nid = SSL_get_shared_curve(ssl, 0);
+    if (curve_nid != NID_undef) {
+      const char *curveName = OBJ_nid2sn(curve_nid);
+      if (auto it = curve_map.find(curveName); it != curve_map.end()) {
+        SSL_INCREMENT_DYN_STAT((intptr_t)it->second);
+      }
+    }
   }
 }
 

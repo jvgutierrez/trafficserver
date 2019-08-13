@@ -30,6 +30,7 @@
 
 RecRawStatBlock *ssl_rsb = nullptr;
 std::unordered_map<std::string, intptr_t> cipher_map;
+std::unordered_map<std::string, intptr_t> curve_map;
 
 static int
 SSLRecRawStatSyncCount(const char *name, RecDataT data_type, RecData *data, RecRawStatBlock *rsb, int id)
@@ -242,6 +243,42 @@ SSLInitializeStatistics()
       Debug("ssl", "registering SSL cipher metric '%s'", statName.c_str());
     }
   }
+
+  EC_builtin_curve *curves = nullptr;
+  size_t curve_len = EC_get_builtin_curves(nullptr, 0);
+  curves = static_cast<EC_builtin_curve *>(OPENSSL_malloc(sizeof(*curves) * curve_len));
+  EC_get_builtin_curves(curves, curve_len);
+  size_t curve_index;
+
+  for(curve_index = 0; curve_index < curve_len; curve_index++) {
+    const char *curveName = OBJ_nid2sn(curves[curve_index].nid);
+    std::string statName  = "proxy.process.ssl.curve.user_agent." + std::string(curveName);
+    // If room in allocated space ...
+    if ((ssl_curve_stats_start + curve_index) > ssl_curve_stats_end) {
+      // Too many curves, increase ssl_cipher_stats_end.
+      SSLError("too many curves to register metric '%s', increase SSL_Stats::ssl_curve_stats_end", statName.c_str());
+      continue;
+    }
+    if (curveName && curve_map.find(curveName) == curve_map.end()) {
+      cipher_map.emplace(curveName, (intptr_t)(ssl_curve_stats_start + curve_index));
+      RecRegisterRawStat(ssl_rsb, RECT_PROCESS, statName.c_str(), RECD_INT, RECP_NON_PERSISTENT,
+                        (int)ssl_curve_stats_start + curve_index, RecRawStatSyncSum);
+      SSL_CLEAR_DYN_STAT((int)ssl_curve_stats_start + curve_index);
+      Debug("ssl", "registering SSL curve metric '%s'", statName.c_str());
+    }
+  }
+  OPENSSL_free(curves);
+  // X25519 available in >= OpenSSL 1.1.0 doesn't implement EC interface, so it's not listed in EC_get_builtin_curves()
+#if OPENSSL_VERSION_NUMBER >= 0x010100000
+  std::string x25519curveName = "X25519";
+  if (curve_map.find(x25519curveName) == curve_map.end()) {
+    std::string x25519statName = "proxy.process.ssl.curve.user_agent." + x25519curveName;
+    RecRegisterRawStat(ssl_rsb, RECT_PROCESS, x25519statName.c_str(), RECD_INT, RECP_NON_PERSISTENT,
+                        (int)ssl_curve_stats_start + curve_index, RecRawStatSyncSum);
+    SSL_CLEAR_DYN_STAT((int)ssl_curve_stats_start + curve_index);
+    Debug("ssl", "registering SSL curve metric '%s'", x25519statName.c_str());
+  }
+#endif
 
   SSL_free(ssl);
   SSLReleaseContext(ctx);

@@ -107,11 +107,15 @@ enum SSL_Stats {
   ssl_cipher_stats_start = 100,
   ssl_cipher_stats_end   = 300,
 
+  ssl_curve_stats_start  = 400,
+  ssl_curve_stats_end    = 600,
+
   Ssl_Stat_Count
 };
 
 extern RecRawStatBlock *ssl_rsb;
 extern std::unordered_map<std::string, intptr_t> cipher_map;
+extern std::unordered_map<std::string, intptr_t> curve_map;
 
 // Initialize SSL statistics.
 void SSLInitializeStatistics();
