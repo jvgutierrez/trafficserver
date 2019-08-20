@@ -6361,39 +6361,39 @@ TSHttpTxnClientRespBodyBytesGet(TSHttpTxn txnp)
 }
 
 int
-TSHttpTxnClientReqIsSslReused(TSHttpTxn txnp)
+TSVConnIsSslReused(TSVConn sslp)
 {
-  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+  NetVConnection *vc        = reinterpret_cast<NetVConnection *>(sslp);
+  SSLNetVConnection *ssl_vc = dynamic_cast<SSLNetVConnection *>(vc);
 
-  HttpSM *sm = (HttpSM *)txnp;
-  return sm->client_ssl_reused;
+  return ssl_vc ? ssl_vc->getSSLSessionCacheHit() : 0;
 }
 
 const char *
-TSHttpTxnClientReqSslCipherGet(TSHttpTxn txnp)
+TSVConnSslCipherGet(TSVConn sslp)
 {
-  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+  NetVConnection *vc        = reinterpret_cast<NetVConnection *>(sslp);
+  SSLNetVConnection *ssl_vc = dynamic_cast<SSLNetVConnection *>(vc);
 
-  HttpSM *sm = (HttpSM *)txnp;
-  return sm->client_cipher_suite;
+  return ssl_vc ? ssl_vc->getSSLCipherSuite() : nullptr;
 }
 
 const char *
-TSHttpTxnClientReqSslProtocolGet(TSHttpTxn txnp)
+TSVConnSslProtocolGet(TSVConn sslp)
 {
-  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+  NetVConnection *vc        = reinterpret_cast<NetVConnection *>(sslp);
+  SSLNetVConnection *ssl_vc = dynamic_cast<SSLNetVConnection *>(vc);
 
-  HttpSM *sm = (HttpSM *)txnp;
-  return sm->client_sec_protocol;
+  return ssl_vc ? ssl_vc->getSSLProtocol() : nullptr;
 }
 
 const char *
-TSHttpTxnClientReqSslCurveGet(TSHttpTxn txnp)
+TSVConnSslCurveGet(TSVConn sslp)
 {
-  sdk_assert(sdk_sanity_check_txn(txnp) == TS_SUCCESS);
+  NetVConnection *vc        = reinterpret_cast<NetVConnection *>(sslp);
+  SSLNetVConnection *ssl_vc = dynamic_cast<SSLNetVConnection *>(vc);
 
-  HttpSM *sm = (HttpSM *)txnp;
-  return sm->client_curve;
+  return ssl_vc ? ssl_vc->getSSLCurve() : nullptr;
 }
 
 int
