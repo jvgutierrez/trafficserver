@@ -201,8 +201,10 @@ ssl_get_cached_session(SSL *ssl, const unsigned char *id, int len, int *copy)
   }
 
   SSL_SESSION *session = nullptr;
-  if (session_cache->getSession(sid, &session)) {
+  ssl_session_cache_exdata *exdata = nullptr;
+  if (session_cache->getSession(sid, &session, &exdata)) {
     ink_assert(session);
+    ink_assert(exdata);
 
     // Double check the timeout
     if (ssl_session_timed_out(session)) {
@@ -217,6 +219,7 @@ ssl_get_cached_session(SSL *ssl, const unsigned char *id, int len, int *copy)
       SSLNetVConnection *netvc = SSLNetVCAccess(ssl);
       SSL_INCREMENT_DYN_STAT(ssl_session_cache_hit);
       netvc->setSSLSessionCacheHit(true);
+      netvc->setSSLCurveNID(exdata->curve);
     }
   } else {
     SSL_INCREMENT_DYN_STAT(ssl_session_cache_miss);
@@ -227,8 +230,9 @@ ssl_get_cached_session(SSL *ssl, const unsigned char *id, int len, int *copy)
 static int
 ssl_new_cached_session(SSL *ssl, SSL_SESSION *sess)
 {
-  unsigned int len        = 0;
-  const unsigned char *id = SSL_SESSION_get_id(sess, &len);
+  unsigned int len             = 0;
+  const unsigned char *id      = SSL_SESSION_get_id(sess, &len);
+
   SSLSessionID sid(id, len);
 
   if (diags->tag_activated("ssl.session_cache")) {
@@ -239,7 +243,7 @@ ssl_new_cached_session(SSL *ssl, SSL_SESSION *sess)
   }
 
   SSL_INCREMENT_DYN_STAT(ssl_session_cache_new_session);
-  session_cache->insertSession(sid, sess);
+  session_cache->insertSession(sid, sess, ssl);
 
   // Call hook after new session is created
   APIHook *hook = ssl_hooks->get(TSSslHookInternalID(TS_SSL_SESSION_HOOK));
