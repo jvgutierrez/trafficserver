@@ -460,6 +460,9 @@ HttpTunnel::init(HttpSM *sm_arg, Ptr<ProxyMutex> &amutex)
   if (params->oride.flow_high_water_mark > 0) {
     flow_state.high_water = params->oride.flow_high_water_mark;
   }
+  Debug("http_tunnel", "HttpTunnel::init()");
+  memset(consumers, 0, sizeof(consumers));
+  memset(producers, 0, sizeof(producers));
   // This should always be true, we handled default cases back in HttpConfig::reconfigure()
   ink_assert(flow_state.low_water <= flow_state.high_water);
 }
@@ -500,14 +503,14 @@ HttpTunnel::kill_tunnel()
 HttpTunnelProducer *
 HttpTunnel::alloc_producer()
 {
-  for (int i = 0; i < MAX_PRODUCERS; ++i) {
+  for (int i = 0; i < MAX_PRODUCERS; i++) {
     if (producers[i].vc == nullptr) {
       num_producers++;
       ink_assert(num_producers <= MAX_PRODUCERS);
       return producers + i;
     }
   }
-  ink_release_assert(0);
+//  ink_release_assert(0);
   return nullptr;
 }
 
